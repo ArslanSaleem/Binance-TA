@@ -4,6 +4,8 @@
 #include "binacpp_websocket.h"
 #include <json/json.h>
 #include "BinanceObjects.h"
+#include "techical_indicators/Ema.h"
+#include <thread>
 
 using grpc::ServerContext;
 using grpc::Status;
@@ -21,10 +23,14 @@ class ServiceLoop
     // TODO - Configurator for Services
     // Services list
     // Service lookup
-    static map<long, map<string, double> > klinesCache;
+    // implement Service Loop up to register and fetch service
+    static EmaService ema_service;
+
+    std::thread t1;
 
     static int ws_klines_onData(Json::Value &json_result)
     {
+
         KLine kline_data{
             json_result["E"].asInt64(),                                         // Event time
             json_result["k"]["t"].asInt64(),                                    // Kline start time
@@ -41,11 +47,12 @@ class ServiceLoop
             static_cast<float>(atof(json_result["k"]["Q"].asString().c_str())),
             static_cast<float>(atof(json_result["k"]["q"].asString().c_str())) - static_cast<float>(atof(json_result["k"]["Q"].asString().c_str())),
         };
-        std::cout << "*************************************************\n";
-        std::cout << kline_data;
+        ema_service.notify(kline_data);
+        lastKline = kline_data;
     }
 
 public:
+    static KLine lastKline;
     void start_service_loop()
     {
         // Start Event thread
@@ -53,22 +60,47 @@ public:
         int (*func)(Json::Value &) = &ServiceLoop::ws_klines_onData;
         BinaCPP_websocket::init();
         BinaCPP_websocket::connect_endpoint(func, "/ws/btcbusd@kline_1m");
-        BinaCPP_websocket::connect_endpoint(func, "/ws/btcbusd@kline_5m");
-        BinaCPP_websocket::enter_event_loop();
+        t1 = std::thread(&BinaCPP_websocket::enter_event_loop);
+    }
+    float get_value()
+    {
+        return ema_service.get_value();
     }
 };
 
-map<long, map<string, double> > ServiceLoop::klinesCache;
+// map<long, map<string, double> > ServiceLoop::klinesCache;
+EmaService ServiceLoop::ema_service = EmaService(100);
+KLine ServiceLoop::lastKline;
 
 // Logic and data behind the server's behavior.
 class TickerServiceImpl final : public Ticker::Service
 {
+public:
+    TickerServiceImpl()
+    {
+
+        service_loop.start_service_loop();
+    }
+
+private:
     Status EmaTick(ServerContext *context, const Integer *request, TickData *reply) override
     {
+        long millis = service_loop.lastKline.timestamp;
         google::protobuf::Timestamp *timestamp = new google::protobuf::Timestamp();
-        timestamp->set_seconds(10000);
-        timestamp->set_nanos(100);
+
+        timestamp->set_seconds(millis / 1000);
+        timestamp->set_nanos((int)((millis % 1000) * 1000000));
+        std::cout << "ioioioi\n";
+        std::cout << service_loop.lastKline.start_time << "\n";
+        std::cout << service_loop.lastKline.end_time << "\n";
+        std::cout << service_loop.lastKline.timestamp << "\n";
+
+        // google::protobuf::Timestamp *timestamp = google::protobuf::Timestamp()
+        // .newBuilder().setSeconds(millis / 1000).setNanos((int)((millis % 1000) * 1000000)).build();
+
         reply->set_allocated_time(timestamp);
+        reply->set_price(service_loop.get_value());
         return Status::OK;
     }
+    ServiceLoop service_loop;
 };

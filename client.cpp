@@ -27,7 +27,7 @@ public:
 
     // Assembles the client's payload, sends it and presents the response back
     // from the server.
-    google::protobuf::Timestamp EmaTick(const int &days)
+    TickData EmaTick(const int &days)
     {
         // Data we are sending to the server.
         Integer request;
@@ -46,13 +46,13 @@ public:
         // Act upon its status.
         if (status.ok())
         {
-            return reply.time();
+            return reply;
         }
         else
         {
             std::cout << status.error_code() << ": " << status.error_message()
                       << std::endl;
-            return google::protobuf::Timestamp();
+            return reply;
         }
     }
 
@@ -69,8 +69,9 @@ int main(int argc, char **argv)
     TickerClient ticker(grpc::CreateChannel(
         "localhost:50051", grpc::InsecureChannelCredentials()));
     int days{12};
-    google::protobuf::Timestamp reply = ticker.EmaTick(days);
-    std::cout << "Greeter received: " << reply.nanos() << std::endl;
+    TickData data = ticker.EmaTick(days);
+    std::cout << "Time: " << data.time().seconds() << "." << data.time().nanos() << std::endl;
+    std::cout << "Price: " << data.price() << std::endl;
 
     return 0;
 }

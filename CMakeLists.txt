@@ -4,8 +4,10 @@ cmake_minimum_required(VERSION 3.2)
 add_compile_options(-std=c++17)
 
 set(BINANCE_LIB ${CMAKE_CURRENT_SOURCE_DIR}/src/binance)
+
 set(JSON_LIB ${CMAKE_CURRENT_SOURCE_DIR}/lib/jsoncpp-1.8.3)
 set(JSON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/jsoncpp-1.8.3/include)
+
 
 # GRPC and Protocol Buffers libraries location
 list(APPEND CMAKE_PREFIX_PATH "/opt/grpc" "/opt/protobuf")
@@ -34,7 +36,6 @@ add_subdirectory(${BINANCE_LIB})
 include_directories(${BINANCE_LIB})
 include_directories(${JSON_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${LIBWEBSOCKETS_INCLUDE_DIR})
-
 
 # Building server
 add_executable(ticker_server

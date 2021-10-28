@@ -17,8 +17,8 @@ using grpc::ServerContext;
 
 void RunServer()
 {
-    ServiceLoop service_loop;
-    service_loop.start_service_loop();
+    // ServiceLoop service_loop;
+    // service_loop.start_service_loop();
 
     std::string server_address("0.0.0.0:50051");
     TickerServiceImpl service;

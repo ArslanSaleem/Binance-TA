@@ -22,4 +22,5 @@ message Integer {
 // The response message containing the greetings
 message TickData {
   google.protobuf.Timestamp time = 1;
+  float price = 2;
 }
