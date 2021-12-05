@@ -20,7 +20,6 @@ map<struct lws *, CB> BinaCPP_websocket::handles;
 //--------------------------
 int BinaCPP_websocket::event_cb(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len)
 {
-
 	switch (reason)
 	{
 	case LWS_CALLBACK_CLIENT_ESTABLISHED:

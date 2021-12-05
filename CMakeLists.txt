@@ -18,6 +18,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(Protobuf REQUIRED)
 find_package(GRPC REQUIRED)
 find_package(Websocket REQUIRED)
+find_package(CURL REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 set(PROTOS 
     ${CMAKE_CURRENT_SOURCE_DIR}/protos/ticker.proto
@@ -36,6 +38,8 @@ add_subdirectory(${BINANCE_LIB})
 include_directories(${BINANCE_LIB})
 include_directories(${JSON_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${LIBWEBSOCKETS_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIRS})
+
 
 # Building server
 add_executable(ticker_server
@@ -49,6 +53,8 @@ target_link_libraries(ticker_server
     libbinance
     libjsoncpp
     libwebsockets
+    curl::curl
+    OpenSSL::SSL OpenSSL::Crypto
 )
 
 # Building client

@@ -9,7 +9,7 @@
 
 #include <grpc++/grpc++.h>
 
-#include "src/services/TickerService.h"
+#include "src/core/services/TickerService.h"
 
 using grpc::Server;
 using grpc::ServerBuilder;
