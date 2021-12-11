@@ -12,6 +12,7 @@ package ticker;
 service Ticker {
   // Sends a greeting
   rpc EmaTick(Integer) returns (TickData) {}
+  rpc RSITick(Integer) returns (TickData) {}
 }
 
 // The request message containing the user's name.

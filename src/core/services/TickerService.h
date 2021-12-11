@@ -43,9 +43,13 @@ public:
         rsi_service.init_service_loop();
     }
 
-    float get_value()
+    float get_ema_value()
     {
         return ema_service.get_value();
+    }
+    float get_rsi_value()
+    {
+        return rsi_service.get_value();
     }
 
     Ema<10> ema_service;
@@ -74,8 +78,20 @@ private:
         timestamp->set_seconds(millis / 1000);
         timestamp->set_nanos((int)((millis % 1000) * 1000000));
         reply->set_allocated_time(timestamp);
-        reply->set_price(service_loop.get_value());
+        reply->set_price(service_loop.get_ema_value());
         return Status::OK;
     }
+
+    Status RSITick(ServerContext *context, const Integer *request, TickData *reply) override
+    {
+        long millis = BinanceDataProvider::last_kline.start_time;
+        google::protobuf::Timestamp *timestamp = new google::protobuf::Timestamp();
+        timestamp->set_seconds(millis / 1000);
+        timestamp->set_nanos((int)((millis % 1000) * 1000000));
+        reply->set_allocated_time(timestamp);
+        reply->set_price(service_loop.get_rsi_value());
+        return Status::OK;
+    }
+
     ServiceLoop service_loop;
 };
